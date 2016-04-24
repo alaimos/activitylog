@@ -10,18 +10,23 @@ class DefaultLaravelHandler implements ActivitylogHandlerInterface
      * Log activity in Laravels log handler.
      *
      * @param string $text
-     * @param $userId
+     * @param string $level
+     * @param string $userId
      * @param array  $attributes
      *
      * @return bool
      */
-    public function log($text, $userId = '', $attributes = [])
+    public function log($text, $level = 'info', $userId = '', $attributes = [])
     {
         $logText = $text;
-        $logText .= ($userId != '' ? ' (by user_id '.$userId.')' : '');
-        $logText .= (count($attributes)) ? PHP_EOL.print_r($attributes, true) : '';
+        $logText .= ($userId != '' ? ' (by user_id ' . $userId . ')' : '');
+        $logText .= (count($attributes)) ? PHP_EOL . print_r($attributes, true) : '';
 
-        Log::info($logText);
+        if (method_exists('Log', $level)) {
+            forward_static_call(['Log', $level], $logText);
+        } else {
+            Log::info($logText);
+        }
 
         return true;
     }

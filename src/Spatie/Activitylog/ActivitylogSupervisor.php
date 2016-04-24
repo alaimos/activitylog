@@ -4,15 +4,27 @@ namespace Spatie\Activitylog;
 
 use Illuminate\Config\Repository;
 use Illuminate\Contracts\Auth\Guard;
+use Spatie\Activitylog\Handlers\ActivitylogHandlerInterface;
 use Spatie\Activitylog\Handlers\BeforeHandler;
+use Spatie\Activitylog\Handlers\BeforeHandlerInterface;
 use Spatie\Activitylog\Handlers\DefaultLaravelHandler;
 use Request;
 use Config;
 
 class ActivitylogSupervisor
 {
+
+    const LEVEL_EMERGENCY = 'emergency';
+    const LEVEL_ALERT = 'alert';
+    const LEVEL_CRITICAL = 'critical';
+    const LEVEL_ERROR = 'error';
+    const LEVEL_WARNING = 'warning';
+    const LEVEL_NOTICE = 'notice';
+    const LEVEL_INFO = 'info';
+    const LEVEL_DEBUG = 'debug';
+
     /**
-     * @var array logHandlers
+     * @var ActivitylogHandlerInterface[] logHandlers
      */
     protected $logHandlers = [];
 
@@ -44,23 +56,24 @@ class ActivitylogSupervisor
     /**
      * Log some activity to all registered log handlers.
      *
-     * @param $text
+     * @param        $text
+     * @param string $level
      * @param string $userId
      *
      * @return bool
      */
-    public function log($text, $userId = '')
+    public function log($text, $level = self::LEVEL_INFO, $userId = '')
     {
         $userId = $this->normalizeUserId($userId);
 
-        if (! $this->shouldLogCall($text, $userId)) {
+        if (!$this->shouldLogCall($text, $level, $userId)) {
             return false;
         }
 
         $ipAddress = Request::getClientIp();
 
         foreach ($this->logHandlers as $logHandler) {
-            $logHandler->log($text, $userId, compact('ipAddress'));
+            $logHandler->log($text, $level, $userId, compact('ipAddress'));
         }
 
         return true;
@@ -111,12 +124,13 @@ class ActivitylogSupervisor
     /**
      * Determine if this call should be logged.
      *
-     * @param $text
-     * @param $userId
+     * @param        $text
+     * @param string $level
+     * @param        $userId
      *
      * @return bool
      */
-    protected function shouldLogCall($text, $userId)
+    protected function shouldLogCall($text, $level, $userId)
     {
         $beforeHandler = $this->config->get('activitylog.beforeHandler');
 
@@ -124,6 +138,8 @@ class ActivitylogSupervisor
             return true;
         }
 
-        return app($beforeHandler)->shouldLog($text, $userId);
+        /** @var BeforeHandlerInterface $handler */
+        $handler = app($beforeHandler);
+        return $handler->shouldLog($text, $level, $userId);
     }
 }

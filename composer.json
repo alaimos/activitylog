@@ -1,7 +1,7 @@
 {
-    "name": "spatie/activitylog",
-    "description": "A very simple activity logger to monitor the users of your website or application",
-    "homepage": "https://github.com/spatie/activitylog",
+    "name": "alaimos/activitylog",
+    "description": "A fork of spatie/activitylog which adds supports to log levels",
+    "homepage": "https://github.com/alaimos/activitylog",
     "keywords":
         [
             "log",
@@ -10,6 +10,10 @@
             "laravel"
         ],
     "authors": [
+        {
+            "name": "Salvatore Alaimo",
+            "email": "alaimos@dmi.unict.it"
+        },
         {
             "name": "Freek Van der Herten",
             "email": "freek@spatie.be"

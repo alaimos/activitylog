@@ -13,7 +13,9 @@ trait LogsActivity
 
                 $message = $model->getActivityDescriptionForEvent($eventName);
 
-                if ($message != '') {
+                if (is_array($message) && count($message) == 2) {
+                    Activity::log($message[0], $message[1]);
+                } elseif (!is_array($message) && $message != '') {
                     Activity::log($message);
                 }
             });
